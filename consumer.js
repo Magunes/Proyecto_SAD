@@ -29,6 +29,7 @@ const main = async () => {
 	 //Pasar ahora a cola kafka con resultados usando de key el uuid
 	 //Consumir de la cola kafka el ID del usuario y ver los trabajos que ha enviado
 	      //añadiendo el trabajo actual, esto es posible si existe retain
+      }
    })
 }
 
