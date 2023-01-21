@@ -62,7 +62,7 @@ main().catch(async error => {
    try {
       await consumer.disconnect()
    } catch (e) {
-      console.error('Failed to gracefully disconnect consumer', e)
+      console.error('Fallo al intentar desconectar el consumidor', e)
    }
    process.exit(1)
 })
