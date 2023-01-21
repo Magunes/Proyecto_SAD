@@ -9,61 +9,93 @@ const producer = kafka.producer()
 var app = express()
 app.use(express.urlencoded())
 
-const usuario = Date.now().toString()
+//Cambiar a usuario de keycloack
+const user = "UsuarioPrueba"
+const jobs = new Map()
+const jobsResult = new Map()
 
 const main = async () => {
 
    await producer.connect()
+   await consumer.connect()
+   await consumer.subscribe({
+      topic: "Salida",
+      fromBeginning: true
+   })
 
-   app.get('/enviar_trabajo', function(req,res,next) {
+   await consumer.run({
+      eachMessage: async ({ message }) => {
+         const result = message.value.toString()
+         //res.send('El resultado del trabajo es: <br>'+ result)
+      }
+   })
+
+   app.get('/index', function(req,res,next) {
       res.send(`
-      <form method= "POST" action="/">
-      <input type="text" name="url" placeholder="Aquí tu url :)">
+      <form method= "POST" action="/enviar_trabajo">
+      <input type="text" name="url" placeholder="URL de git">
       <input type="submit">
       </form>
       <br>
-      <form method= "POST" action="/get_trabajo">
+      <form method= "POST" action="/estado_trabajo">
       <input type="text" name="codigo" placeholder="Numero de trabajo">
+      <input type="submit">
+      </form>
+      <br>
+      <form method= "POST" action="/lista_trabajo">
       <input type="submit">
       </form>
       `)
    })
 
-   app.post('/', function(req,res,next){
+   app.post('/enviar_trabajo', function(req,res,next){
 
       const url = JSON.stringify(req.body.url)
-      const auth = Date.now().toString().slice(3,13)+usuario
+      const auth = Date.now().toString().slice(3,13)+user
 
       producer.send({
          topic: "Entrada",
          messages: [ { key: auth, value: url } ]
       })
 
-      res.send('Trabajo enviado, el codigo de trabajo es: '+auth.slice(0,10)+'<br>El usuari es: '+auth.slice(10))
+      if(jobs.has(user)){
+         var temp = jobs.get(user)
+         temp.push(auth.slice(0,10))
+         jobs.set(user,temp)
+      }
+      else{
+         jobs.set(user,[auth.slice(0,10)])
+      }
+
+      res.send('Trabajo enviado, el codigo de trabajo es: '+auth.slice(0,10)
+         +'<br>Por parte del usuario: '+auth.slice(10)
+         +'<br>Con URL: '+req.body.url+
+         `<br><br>
+         <form method= "GET" action="/index">
+         <input type="submit">
+         </form>`)
    })
 
-   app.post('/get_trabajo', async function(req,res,next){
+   app.post('/estado_trabajo', function(req,res,next){
+   })
 
-      var code = JSON.stringify(req.body.codigo)
-      code = code.toString().slice(1,-1)
-
-      await consumer.connect()
-
-      await consumer.subscribe({
-         topic: code,
-         fromBeginning: true
-      })
-
-      await consumer.run({
-         eachMessage: async ({ message }) => {
-            const result = message.value.toString()
-            res.send('El resultado del trabajo es: <br>'+ result)
-         }
-      })
-
-       //Es necesario desconectar al consumer. antes de que pase a otro codigo
-
-    })
+   app.post('/lista_trabajo', function(req,res,next){
+      if(jobs.has(user)){
+         var temp = jobs.get(user)
+         var toret = "Listado de trabajos del usuario "+user+":<br><br>"
+         temp.forEach(function(value){
+            toret += "  -"+value+"<br><br>"
+         })
+         res.send(toret)
+      }
+      else{
+         res.send(`El usuario actual (`+user+`) no ha enviado trabajos
+            <br><br>
+            <form method= "GET" action="/index">
+            <input type="submit">
+            </form>`)
+      }
+   })
 
    app.listen(3000, () => {
       console.log('Escuchando')
@@ -75,7 +107,7 @@ main().catch(async error => {
    try {
       await consumer.disconnect()
    } catch (e) {
-      console.error('Failed to gracefully disconnect consumer', e)
+      console.error('Fallo al intentar desconectar el consumidor', e)
    }
    process.exit(1)
 })
