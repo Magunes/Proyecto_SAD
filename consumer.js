@@ -50,7 +50,7 @@ const main = async () => {
          else{
    	      await producer.send({
    	         topic: topic,
-   		      messages: [ { value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
+   		      messages: [ { key: auth, value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
    	      })
    	   }
       }
