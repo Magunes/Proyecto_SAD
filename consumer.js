@@ -19,36 +19,44 @@ const main = async () => {
    await consumer.run({
       eachMessage: async ({ message }) => {
 
-	 const addr = message.value.toString().slice(1,-1)
-	 const topic = message.key.toString()
-	 var control = 1 //asociar el valor de control según el resultado de download
+      const addr = message.value.toString().slice(1,-1)
+      const topic = "Salida"
 
+      //hay que cambiar el directorio test en funcion del valor que venga de la peticion
+      const control = new Promise(function(resolve) {
          download('direct:'+addr+'.git','test/',{ clone:true },function(err){
-	     console.log(err ? "1" : "2")
-	 }) 
+            if(fs.existsSync("./test/index.py")){
+               resolve(true)
+            }
+            else{
+               resolve(false)
+            }
+         })
+      })
 
-         if(control){
-             console.log("Clonado correcto: "+addr)
-             var process = spawn('python',["./test/index.py"])
+      if(await control){
+         //console.log("Clonado correcto: "+addr)
 
-             process.stdout.on('data',async function(data){
-		 console.log(data.toString())
-                 await producer.send({
-                     topic: topic,
-                     messages: [ { value: data.toString() } ]
-                 })
-		 //El directorio se borra por alguna razon antes o relacionado con la creacion del directorio
-		 //fs.rmSync("./test/", {recursive: true, force: true})
-             })
+         var process = spawn('python',["./test/index.py"])
+         process.stdout.on('data',async function(data){
+		      console.log(data.toString())
+            await producer.send({
+               topic: topic,
+               messages: [ { value: data.toString() } ]
+            })
 
-	 } else{
-             console.log("Error clonado")
-	     producer.send({
+		   fs.rmSync("./test/", {recursive: true, force: true})
+         })
+
+	   }else{
+         //console.log("Error clonado")
+
+	      await producer.send({
 	         topic: topic,
-		 messages: [ { value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
-	     })
-	 }
-        
+		      messages: [ { value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
+	      })
+
+	   }  
       }
    })
 }
