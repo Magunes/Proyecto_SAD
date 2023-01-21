@@ -7,6 +7,7 @@ const consumer = kafka.consumer({
 const producer = kafka.producer()
 const fs = require('fs')
 
+const topic = "Salida"
 
 const main = async () => {
    await producer.connect()
@@ -18,45 +19,41 @@ const main = async () => {
 
    await consumer.run({
       eachMessage: async ({ message }) => {
+         const addr = message.value.toString().slice(1,-1)
+         const auth = message.key.toString()
 
-      const addr = message.value.toString().slice(1,-1)
-      const topic = "Salida"
-
-      //hay que cambiar el directorio test en funcion del valor que venga de la peticion
-      const control = new Promise(function(resolve) {
-         download('direct:'+addr+'.git','test/',{ clone:true },function(err){
-            if(fs.existsSync("./test/index.py")){
-               resolve(true)
-            }
-            else{
-               resolve(false)
-            }
-         })
-      })
-
-      if(await control){
-         //console.log("Clonado correcto: "+addr)
-
-         var process = spawn('python',["./test/index.py"])
-         process.stdout.on('data',async function(data){
-		      console.log(data.toString())
-            await producer.send({
-               topic: topic,
-               messages: [ { value: data.toString() } ]
+         const location = "./"+auth+"/"
+         
+         const control = new Promise(function(resolve) {
+            download('direct:'+addr+'.git',location,{ clone:true },function(err){
+               if(fs.existsSync(location)){
+                  resolve(true)
+               }
+               else{
+                  resolve(false)
+               }
             })
-
-		   fs.rmSync("./test/", {recursive: true, force: true})
          })
 
-	   }else{
-         //console.log("Error clonado")
+         if(await control){
+            var process = spawn('python',[location+"index.py"])
+            process.stdout.on('data',async function(data){
+   		      console.log(data.toString())
+               await producer.send({
+                  topic: topic,
+                  messages: [ { key: auth, value: data.toString() } ]
+               })
 
-	      await producer.send({
-	         topic: topic,
-		      messages: [ { value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
-	      })
+               fs.rmSync(location, {recursive: true, force: true})
+            })
+   	   }
 
-	   }  
+         else{
+   	      await producer.send({
+   	         topic: topic,
+   		      messages: [ { value: "El repositorio no ha podido clonarse, asegurate de que es un repositorio publico" } ]
+   	      })
+   	   }
       }
    })
 }
