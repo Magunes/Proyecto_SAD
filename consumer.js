@@ -1,11 +1,11 @@
 const kafka = require('./kafka')
 const download = require('download-git-repo')
 const {spawn} = require('child_process')
+const fs = require('fs')
 const consumer = kafka.consumer({
    groupId: "workers"
 })
 const producer = kafka.producer()
-const fs = require('fs')
 
 const topic = "Salida"
 
@@ -38,7 +38,6 @@ const main = async () => {
          if(await control){
             var process = spawn('python',[location+"index.py"])
             process.stdout.on('data',async function(data){
-   		      console.log(data.toString())
                await producer.send({
                   topic: topic,
                   messages: [ { key: auth, value: data.toString() } ]
