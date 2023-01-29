@@ -42,6 +42,15 @@ services:
       KEYCLOAK_SECRET_KEY: 'hKCfj89bvCxg5JxCtCDlhgtSaZcuQxNT'
       KEYCLOAK_BROKER: http://localhost:8080/
 
+  consumer:
+    image: crimide/consumer
+    container_name: consumer
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER_SERVER: kafka:9092
+      KEYCLOAK_CLIENTID: service-app
+
   postgres:
     image: postgres
     container_name: postgres

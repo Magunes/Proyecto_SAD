@@ -1,4 +1,4 @@
-const kafka = require('../server/kafka')
+const kafka = require('./kafka')
 const download = require('download-git-repo')
 const {spawn} = require('child_process')
 const fs = require('fs')
