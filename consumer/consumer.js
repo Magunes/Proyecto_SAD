@@ -7,13 +7,13 @@ const consumer = kafka.consumer({
 })
 const producer = kafka.producer()
 
-const topic = process.env.TOPIC_COLA_SALIDA
+const topic = "Salida"
 
 const main = async () => {
    await producer.connect()
    await consumer.connect()
    await consumer.subscribe({
-      topic: process.env.TOPIC_COLA_ENTRADA,
+      topic: "Entrada",
       fromBeginning: true
    })
 

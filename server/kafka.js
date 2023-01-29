@@ -9,7 +9,6 @@ const ssl = !!sasl
 
 const kafka = new Kafka({ clientId, brokers /*ssl sasl*/ })
 
-
 /*
 const groupId= 'Grupo'
 const producer = kafka.producer()

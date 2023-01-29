@@ -6,8 +6,7 @@ const keycloak = require('./config/keycloak-config.js').getKeycloak()
 const kafka = require('./kafka')  
 const {producer: producer} = require('./server.js')
 const {token: token} = require('./server.js')
-const groupId= 'Grupo'
-//const producer = kafka.producer()
+const groupId= 'servers'
 const consumer = kafka.consumer({ groupId })
 const admin = kafka.admin()
 
@@ -32,7 +31,7 @@ router.post('/enviar_trabajo', keycloak.protect(),function(req,res){
     const auth = Date.now().toString().slice(3,13)+user
     //conectarProducer()
     producer.send({
-        topic: process.env.TOPIC_COLA_ENTRADA,
+        topic: "Entrada",
         messages: [ { key: auth, value: url } ]
     })
 

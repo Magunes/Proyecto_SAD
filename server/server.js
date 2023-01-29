@@ -8,6 +8,7 @@ const consumer = kafka.consumer({
 })
 var memoryStore = new session.MemoryStore();
 const producer = kafka.producer()      
+//const admin = kafka.admin()
 const keycloak = require('./config/keycloak-config.js').initKeycloak(memoryStore)
 
 
@@ -32,10 +33,17 @@ const jobsResult = new Map()
 var token = ""
 
 const main = async () => {
+   /*await admin.connect()
+   await admin.createTopics({
+      waitForLeaders: true,
+      topic: [{topic: process.env.TOPIC_COLA_SALIDA}, 
+         {topic: process.env.TOPIC_COLA_ENTRADA}
+      ]
+   })*/
    await producer.connect()
    await consumer.connect()
    await consumer.subscribe({
-      topic: process.env.TOPIC_COLA_SALIDA,
+      topic: "Salida",
       fromBeginning: true
    })
 
@@ -169,6 +177,7 @@ const main = async () => {
       }
    })
 */
+   
    app.listen(3000, () => {
       console.log('Escuchando')
    })
