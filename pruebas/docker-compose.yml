@@ -1,0 +1,10 @@
+---
+version: '2'
+services:
+  key-cloak:
+    image: quay.io/keycloak/keycloak:legacy
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: secreto
+    ports:
+      - "8080:8080"
