@@ -24,12 +24,11 @@ function conseguirNickUsuario(tokenDecodificado){
 }
 
 router.post('/enviar_trabajo', keycloak.protect(),function(req,res){
-    //const url = JSON.stringify(req.body.url)
     const url = req.body.url
     const token = conseguirToken(req.body.token)
     const user = conseguirNickUsuario(token)
     const auth = Date.now().toString().slice(3,13)+user
-    //conectarProducer()
+
     producer.send({
         topic: "Entrada",
         messages: [ { key: auth, value: url } ]
@@ -56,6 +55,7 @@ router.post('/enviar_trabajo', keycloak.protect(),function(req,res){
 router.post('/estado_trabajo', keycloak.protect(), function(req,res){
     const token = conseguirToken(req.body.token)
     const user = conseguirNickUsuario(token)
+
     if(jobs.has(user)){
          var temp = jobs.get(user)
          if(temp.indexOf(req.body.codigo)+1 != 0){
@@ -95,6 +95,7 @@ router.post('/estado_trabajo', keycloak.protect(), function(req,res){
 router.post('/lista_trabajo', keycloak.protect(),function(req,res){
     const token = conseguirToken(req.body.token)
     const user = conseguirNickUsuario(token)
+    
     if(jobs.has(user)){
          var temp = jobs.get(user)
          var toret = "Listado de trabajos del usuario "+user+":<br><br>"

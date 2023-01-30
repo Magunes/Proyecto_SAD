@@ -7,12 +7,6 @@ const password = ''
 const sasl = username && password ? { username, password, mechanism: 'plain' } : null
 const ssl = !!sasl
 
-const kafka = new Kafka({ clientId, brokers /*ssl sasl*/ })
+const kafka = new Kafka({ clientId, brokers })
 
-/*
-const groupId= 'Grupo'
-const producer = kafka.producer()
-const consumer = kafka.consumer({ groupId })
-const admin = kafka.admin()
-*/
 module.exports = kafka
