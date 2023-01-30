@@ -30,6 +30,7 @@ services:
 
   server:
     image: crimide/server
+    build: ./server/
     container_name: server
     ports:
       - "3000:3000"
@@ -38,18 +39,19 @@ services:
     environment:
       KAFKA_BROKER_SERVER: kafka:9092
       KEYCLOAK_CLIENTID: app_microservicios
-      KEYCLOAK_REALM: 'master'
-      KEYCLOAK_SECRET_KEY: 'hKCfj89bvCxg5JxCtCDlhgtSaZcuQxNT'
-      KEYCLOAK_BROKER: http://localhost:8080/
+      KEYCLOAK_REALM: master
+      KEYCLOAK_SECRET_KEY: S2dC2206Lvv09M7CMxlQ41nM2vkcR5Xm
+      KEYCLOAK_BROKER: keycloak:8080
 
   consumer:
     image: crimide/consumer
+    build: ./consumer/
     container_name: consumer
     depends_on:
       - kafka
     environment:
       KAFKA_BROKER_SERVER: kafka:9092
-      KEYCLOAK_CLIENTID: service-app
+      KEYCLOAK_CLIENTID: app_microservicios
 
   postgres:
     image: postgres
